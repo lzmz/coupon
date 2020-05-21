@@ -1,5 +1,6 @@
 package io.github.lzmz.coupon.exceptions;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
@@ -19,27 +20,32 @@ public class ApiError implements Serializable {
     /**
      * An internal code of the error.
      */
+    @Schema(description = "Internal code of the error.")
     private int code;
 
     /**
      * The operation call status.
      */
+    @Schema(description = "HTTP status response code.")
     private int status;
 
     /**
      * The {@link LocalDateTime} instance of when the error happened. It is established
      * by default when a new {@link ApiError} is created.
      */
+    @Schema(description = "Date time of the error.")
     private LocalDateTime timestamp;
 
     /**
      * Message about the error.
      */
+    @Schema(description = "Message about the error.")
     private String message;
 
     /**
      * List of detailed errors.
      */
+    @Schema(description = "Detailed error.")
     private List<String> errors;
 
     public ApiError(int code, HttpStatus status, String message, List<String> errors) {

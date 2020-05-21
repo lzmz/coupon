@@ -6,6 +6,8 @@ import io.github.lzmz.coupon.endpoint.CouponEndpoint;
 import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Coupon")
 @RestController
 @RequestMapping(value = CouponEndpoint.BASE)
 public class CouponController {
@@ -39,6 +42,9 @@ public class CouponController {
      * items.
      * @throws InsufficientAmountException if none item can be bought with the given amount.
      */
+    @Operation(summary = "Retrieves a subset of the given items that maximizes the total spending but " +
+            "does not exceed the amount supplied. Additionally, it includes the total amount associated " +
+            "to the items of the solution.")
     @PostMapping()
     public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException {
         Map<String, Float> items = itemConsumerService.getItemsPrice(couponCalculateDto.getItemsId());
