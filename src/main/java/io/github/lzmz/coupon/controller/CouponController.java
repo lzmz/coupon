@@ -3,6 +3,7 @@ package io.github.lzmz.coupon.controller;
 import io.github.lzmz.coupon.dto.request.CouponCalculateDto;
 import io.github.lzmz.coupon.dto.response.CouponSolutionDto;
 import io.github.lzmz.coupon.endpoint.CouponEndpoint;
+import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
 import org.springframework.http.HttpStatus;
@@ -36,12 +37,13 @@ public class CouponController {
      * @param couponCalculateDto the coupon calculation request body.
      * @return a list of item IDs that maximizes the total spending, and the amount associated to these
      * items.
+     * @throws InsufficientAmountException if none item can be bought with the given amount.
      */
     @PostMapping()
-    public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) {
+    public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException {
         Map<String, Float> items = itemConsumerService.getItemsPrice(couponCalculateDto.getItemsId());
         List<String> calculated = couponService.calculate(items, couponCalculateDto.getAmount());
-        float total = Float.valueOf(calculated.remove(calculated.size() - 1));
+        float total = Float.parseFloat(calculated.remove(calculated.size() - 1));
         return new ResponseEntity<>(new CouponSolutionDto(calculated, total), HttpStatus.OK);
     }
 }

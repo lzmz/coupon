@@ -1,5 +1,6 @@
 package io.github.lzmz.coupon.service.implementation;
 
+import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
 import io.github.lzmz.coupon.service.CouponService;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,8 @@ public class CouponServiceImpl implements CouponService {
      * {@inheritDoc}
      */
     @Override
-    public List<String> calculate(Map<String, Float> items, Float amount) {
-        if (items == null) {
+    public List<String> calculate(Map<String, Float> items, Float amount) throws InsufficientAmountException {
+        if (items == null || amount == null) {
             return null;
         }
 
@@ -33,12 +34,12 @@ public class CouponServiceImpl implements CouponService {
                 .filter(map -> map.getValue() <= amount)
                 .collect(Collectors.toMap(map -> map.getKey(), map -> (int) (map.getValue().floatValue() * DECIMALS)));
 
+        if (intItems.size() == 0) {
+            throw new InsufficientAmountException(amount);
+        }
+
         String[] itemsId = intItems.keySet().toArray(new String[intItems.size()]);
         int[] itemsPrice = intItems.values().stream().mapToInt(Integer::intValue).toArray();
-
-        if (itemsPrice.length == 0) {
-            return null;
-        }
 
         if (itemsPrice.length == 1 && itemsPrice[0] <= amount) {
             return Arrays.asList(itemsId[0], String.valueOf(itemsPrice[0] / DECIMALS));
@@ -74,17 +75,17 @@ public class CouponServiceImpl implements CouponService {
     public List<String> getItemsForBestResult(String[] itemsId, int[] itemsPrice, int couponValue, int[][] bestSoFar) {
         int value = couponValue;
         int best = bestSoFar[itemsPrice.length][couponValue];
-        List<String> candidates = new ArrayList<>();
+        List<String> items = new ArrayList<>();
 
         for (int i = itemsPrice.length; i > 0 && best > 0; i--) {
             if (best != bestSoFar[i - 1][value]) {
-                candidates.add(itemsId[i - 1]);
+                items.add(itemsId[i - 1]);
                 best -= itemsPrice[i - 1];
                 value -= itemsPrice[i - 1];
             }
         }
 
-        candidates.add(String.valueOf(bestSoFar[itemsPrice.length][couponValue] / DECIMALS));
-        return candidates;
+        items.add(String.valueOf(bestSoFar[itemsPrice.length][couponValue] / DECIMALS));
+        return items;
     }
 }
