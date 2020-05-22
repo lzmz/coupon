@@ -7,6 +7,7 @@ import io.github.lzmz.coupon.endpoint.CouponEndpoint;
 import io.github.lzmz.coupon.exceptions.ApiErrorCode;
 import io.github.lzmz.coupon.exceptions.CustomRestExceptionHandler;
 import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
+import io.github.lzmz.coupon.exceptions.NoItemPriceException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,24 @@ public class CouponControllerTest {
         result.andExpect((jsonPath("$.item_ids").value(hasSize(ids.size()))));
         result.andExpect((jsonPath("$.item_ids", contains(ids.toArray()))));
         result.andExpect((jsonPath("$.total").value(total)));
+    }
+
+    @Test
+    public void calculate_validBodyNoItemPrice_shouldReturnBadRequest() throws Exception {
+        List<String> ids = new ArrayList<>(Arrays.asList("MLA1", "MLA2"));
+
+        when(itemConsumerService.getItemsPrice(ids)).thenThrow(new NoItemPriceException(ids));
+
+        CouponCalculateDto couponCalculateDto = new CouponCalculateDto(ids, 500F);
+
+        ResultActions result = mockMvc.perform(
+                post(CouponEndpoint.BASE)
+                        .content(objectMapper.writeValueAsString(couponCalculateDto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_VALUE));
+
+        result.andExpect(status().isBadRequest());
+        result.andExpect((jsonPath("$.code").value(ApiErrorCode.NO_ITEM_PRICE)));
     }
 
     @Test

@@ -4,6 +4,7 @@ import io.github.lzmz.coupon.dto.request.CouponCalculateDto;
 import io.github.lzmz.coupon.dto.response.CouponSolutionDto;
 import io.github.lzmz.coupon.endpoint.CouponEndpoint;
 import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
+import io.github.lzmz.coupon.exceptions.NoItemPriceException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,12 +43,13 @@ public class CouponController {
      * @return a list of item IDs that maximizes the total spending, and the amount associated to these
      * items.
      * @throws InsufficientAmountException if none item can be bought with the given amount.
+     * @throws NoItemPriceException        if one or more of the items has no price.
      */
     @Operation(summary = "Retrieves a subset of the given items that maximizes the total spending but " +
             "does not exceed the amount supplied. Additionally, it includes the total amount associated " +
             "to the items of the solution.")
     @PostMapping()
-    public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException {
+    public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException, NoItemPriceException {
         Map<String, Float> items = itemConsumerService.getItemsPrice(couponCalculateDto.getItemsId());
         List<String> calculated = couponService.calculate(items, couponCalculateDto.getAmount());
         float total = couponService.calculateTotalAmount(calculated, items);

@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -195,6 +196,22 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         ConsumerServiceErrorDto consumerServiceErrorDto = objectMapper.readValue(body, ConsumerServiceErrorDto.class);
 
         return getErrorResponse(code, httpStatus, message, consumerServiceErrorDto.getMessage());
+    }
+
+    /**
+     * Triggered when one or more items of a given list of IDs has no associated price.
+     *
+     * @param ex the exception to handle.
+     * @return a {@link ResponseEntity} object with the error handled.
+     */
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({NoItemPriceException.class})
+    public ResponseEntity<Object> handleNoItemPrice(NoItemPriceException ex) {
+        int code = ApiErrorCode.NO_ITEM_PRICE;
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        String message = "No item price";
+        List<String> errors = ex.getIds().stream().map(id -> id + " has no price").collect(Collectors.toList());
+        return getErrorResponse(code, httpStatus, message, errors);
     }
 
     /**

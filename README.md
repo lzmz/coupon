@@ -1,5 +1,5 @@
 # Coupon 🎁
-This service is intended to handle gift coupons. Given a list of item identifiers and a maximum amount to spend, item prices will be recovered from MercadoLibre and a subset of those items will be returned.This set maximizes total spending but does not exceed the value of the coupon.
+This service is intended to handle gift coupons. Given a list of item identifiers and a maximum amount to spend, item prices will be recovered from MercadoLibre and a subset of those items will be returned. This set maximizes total spending but does not exceed the value of the coupon.
 
 ---
 

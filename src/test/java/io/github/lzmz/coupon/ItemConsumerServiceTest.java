@@ -1,6 +1,7 @@
 package io.github.lzmz.coupon;
 
 
+import io.github.lzmz.coupon.exceptions.NoItemPriceException;
 import io.github.lzmz.coupon.redis.Item;
 import io.github.lzmz.coupon.redis.ItemRepository;
 import io.github.lzmz.coupon.service.ItemConsumerService;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -40,14 +42,14 @@ public class ItemConsumerServiceTest {
     }
 
     @Test
-    public void getItemsPrice_validIdsNotCached_shouldCallExternalServiceAndReturnPrices() {
+    public void getItemsPrice_validIdsNotCached_shouldCallExternalServiceAndReturnPrices() throws NoItemPriceException {
         List<String> ids = Arrays.asList("MLA1", "MLA2");
         List<Float> prices = Arrays.asList(100F, 210F);
 
         for (int i = 0; i < ids.size(); i++) {
             mockWebServer
                     .enqueue(new MockResponse()
-                            .setResponseCode(200)
+                            .setResponseCode(HttpStatus.OK.value())
                             .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                             .setBody("{\"id\": \"" + ids.get(i) + "\", \"price\":" + prices.get(i) + "}")
                     );
@@ -62,7 +64,7 @@ public class ItemConsumerServiceTest {
     }
 
     @Test
-    public void getItemsPrice_validIdsCached_shouldReturnPricesFromCache() {
+    public void getItemsPrice_validIdsCached_shouldReturnPricesFromCache() throws NoItemPriceException {
         List<String> ids = Arrays.asList("MLA1", "MLA2");
         List<Float> prices = Arrays.asList(100F, 210F);
 
@@ -72,7 +74,7 @@ public class ItemConsumerServiceTest {
 
             mockWebServer
                     .enqueue(new MockResponse()
-                            .setResponseCode(200)
+                            .setResponseCode(HttpStatus.OK.value())
                             .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                             .setBody("{\"id\": \"" + item.getId() + "\", \"price\":" + item.getPrice() + "}")
                     );
@@ -84,5 +86,28 @@ public class ItemConsumerServiceTest {
         assertTrue(items.keySet().containsAll(ids));
         assertTrue(items.values().containsAll(prices));
         assertEquals(mockWebServer.getRequestCount(), 0);
+    }
+
+    @Test
+    public void getItemsPrice_validIdsNoPrice_shouldThrowNoItemPriceException() {
+        List<String> ids = Arrays.asList("MLA1", "MLA2");
+        List<Float> prices = Arrays.asList(100F);
+
+        mockWebServer
+                .enqueue(new MockResponse()
+                        .setResponseCode(HttpStatus.OK.value())
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("{\"id\": \"" + ids.get(0) + "\", \"price\":" + prices.get(0) + "}")
+                );
+
+        mockWebServer
+                .enqueue(new MockResponse()
+                        .setResponseCode(HttpStatus.OK.value())
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("{\"id\": \"" + ids.get(1) + "\"}")
+                );
+
+        assertThrows(NoItemPriceException.class, () -> itemConsumerService.getItemsPrice(ids));
+        assertEquals(mockWebServer.getRequestCount(), ids.size());
     }
 }
