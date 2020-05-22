@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -157,12 +156,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
             message.append(error.getField()).append(" ");
         }
 
-        for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
-            errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
-            message.append(error.getObjectName()).append(" ");
-        }
-
-        return getErrorResponse(code, httpStatus, message.toString(), errors);
+        return getErrorResponse(code, httpStatus, message.toString().trim(), errors);
     }
 
     /**
@@ -227,7 +221,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAll() {
-        int code = ApiErrorCode.INTERNAL;
+        int code = ApiErrorCode.INTERNAL_SERVER_ERROR;
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         String message = "It's not you. It's us. We are having some problems";
         String error = "Error occurred";

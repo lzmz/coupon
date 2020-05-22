@@ -8,6 +8,5 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class ItemPriceDto implements Serializable {
-    private String id;
     private Float price;
 }

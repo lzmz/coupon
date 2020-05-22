@@ -9,6 +9,7 @@ import io.github.lzmz.coupon.service.ItemConsumerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 @Tag(name = "Coupon")
 @RestController
-@RequestMapping(value = CouponEndpoint.BASE)
+@RequestMapping(value = CouponEndpoint.BASE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class CouponController {
 
     private final ItemConsumerService itemConsumerService;
@@ -49,7 +50,7 @@ public class CouponController {
     public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException {
         Map<String, Float> items = itemConsumerService.getItemsPrice(couponCalculateDto.getItemsId());
         List<String> calculated = couponService.calculate(items, couponCalculateDto.getAmount());
-        float total = Float.parseFloat(calculated.remove(calculated.size() - 1));
+        float total = couponService.calculateTotalAmount(calculated, items);
         return new ResponseEntity<>(new CouponSolutionDto(calculated, total), HttpStatus.OK);
     }
 }

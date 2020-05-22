@@ -5,7 +5,7 @@ import io.github.lzmz.coupon.service.CouponService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     public List<String> calculate(Map<String, Float> items, Float amount) throws InsufficientAmountException {
-        if (items == null || amount == null) {
+        if (items == null || amount == null || items.isEmpty()) {
             return null;
         }
 
@@ -32,17 +32,17 @@ public class CouponServiceImpl implements CouponService {
                 .entrySet()
                 .stream()
                 .filter(map -> map.getValue() <= amount)
-                .collect(Collectors.toMap(map -> map.getKey(), map -> (int) (map.getValue().floatValue() * DECIMALS)));
+                .collect(Collectors.toMap(Map.Entry::getKey, map -> (int) (map.getValue() * DECIMALS)));
 
         if (intItems.size() == 0) {
             throw new InsufficientAmountException(amount);
         }
 
-        String[] itemsId = intItems.keySet().toArray(new String[intItems.size()]);
+        String[] itemsId = intItems.keySet().toArray(new String[0]);
         int[] itemsPrice = intItems.values().stream().mapToInt(Integer::intValue).toArray();
 
-        if (itemsPrice.length == 1 && itemsPrice[0] <= amount) {
-            return Arrays.asList(itemsId[0], String.valueOf(itemsPrice[0] / DECIMALS));
+        if (itemsPrice.length == 1 && itemsPrice[0] <= amount * DECIMALS) {
+            return new ArrayList<>(Collections.singletonList(itemsId[0]));
         }
 
         int itemsAmount = itemsPrice.length;
@@ -59,12 +59,34 @@ public class CouponServiceImpl implements CouponService {
             }
         }
 
-        return getItemsForBestResult(itemsId, itemsPrice, couponValue, bestSoFar);
+        return getItemsForBestSolution(itemsId, itemsPrice, couponValue, bestSoFar);
     }
 
     /**
-     * Recover the elements that are part of the best solution and includes the maximized
-     * total expense in the last position of the list.
+     * {@inheritDoc}
+     */
+    @Override
+    public Float calculateTotalAmount(List<String> ids, Map<String, Float> items) {
+        if (ids == null || items == null) {
+            return null;
+        }
+
+        float sum = 0;
+        for (String id : ids) {
+            Float price = items.get(id);
+
+            if (price == null) {
+                return null;
+            }
+
+            sum += price;
+        }
+
+        return sum;
+    }
+
+    /**
+     * Retrieves the elements that are part of the best solution found.
      *
      * @param itemsId     an array of items ID.
      * @param itemsPrice  an array of items price.
@@ -72,7 +94,7 @@ public class CouponServiceImpl implements CouponService {
      * @param bestSoFar   the matrix containing the solutions.
      * @return a list of the items that make up the solution found and the maximized total expense.
      */
-    public List<String> getItemsForBestResult(String[] itemsId, int[] itemsPrice, int couponValue, int[][] bestSoFar) {
+    public List<String> getItemsForBestSolution(String[] itemsId, int[] itemsPrice, int couponValue, int[][] bestSoFar) {
         int value = couponValue;
         int best = bestSoFar[itemsPrice.length][couponValue];
         List<String> items = new ArrayList<>();
@@ -85,7 +107,7 @@ public class CouponServiceImpl implements CouponService {
             }
         }
 
-        items.add(String.valueOf(bestSoFar[itemsPrice.length][couponValue] / DECIMALS));
+        items.sort(String::compareTo);
         return items;
     }
 }

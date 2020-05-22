@@ -1,37 +1,33 @@
 package io.github.lzmz.coupon.config;
 
 import io.github.lzmz.coupon.exceptions.ApiError;
-import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
-import io.swagger.v3.core.converter.ResolvedSchema;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springdoc.core.SpringDocConfigProperties;
-import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Configuration
 public class SwaggerConfig {
+
     private static final String JSON_MEDIA_TYPE = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String BASE_PACKAGE = "io.github.lzmz.coupon.controller";
 
-    private static final String API_ERROR_NAME = ApiError.class.getSimpleName();
-    private static final Schema API_ERROR_SCHEMA = new Schema().$ref(API_ERROR_NAME);
-    private static final MediaType API_ERROR_MEDIA_TYPE = new MediaType().schema(API_ERROR_SCHEMA);
-    private static final Content API_ERROR_CONTENT = new Content().addMediaType(JSON_MEDIA_TYPE, API_ERROR_MEDIA_TYPE);
-
+    /**
+     * Defines global configurations for the exposed API.
+     *
+     * @param springDocConfigProperties {@link SpringDocConfigProperties}.
+     * @return {@link BeanFactoryPostProcessor}.
+     */
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor(SpringDocConfigProperties springDocConfigProperties) {
         return beanFactory -> {
@@ -41,17 +37,16 @@ public class SwaggerConfig {
         };
     }
 
-    @Bean
-    public OpenApiCustomiser customerGlobalHeaderOpenApiCustomiser() {
-        return openApi -> {
-            addApiErrorSchema(openApi);
-            addDefaultGlobalResponses(openApi);
-        };
-    }
-
+    /**
+     * Creates the exposed API.
+     *
+     * @return {@link OpenAPI}.
+     */
     @Bean
     public OpenAPI api() {
-        return new OpenAPI().info(info());
+        return new OpenAPI()
+                .components(components())
+                .info(info());
     }
 
     /**
@@ -88,54 +83,22 @@ public class SwaggerConfig {
     }
 
     /**
-     * Adds the {@link ApiError} class to {@link OpenAPI} schemas.
+     * Defines the components for the exposed API.
      *
-     * @param openApi the api to which will be added the error schema.
+     * @return the components.
      */
-    private void addApiErrorSchema(OpenAPI openApi) {
-        ResolvedSchema resolvedSchema = ModelConverters.getInstance().resolveAsResolvedSchema(new AnnotatedType(ApiError.class));
-        openApi.schema(resolvedSchema.schema.getName(), resolvedSchema.schema);
+    private Components components() {
+        Components components = new Components();
+        components.setSchemas(schemas());
+        return components;
     }
 
     /**
-     * Adds the default global responses of {@link OpenAPI}.
+     * Defines the schemas for the exposed API.
      *
-     * @param openApi the api to which will be added the default global responses.
+     * @return the schemas.
      */
-    private void addDefaultGlobalResponses(OpenAPI openApi) {
-        openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
-            addDefaultGlobalResponses(operation.getResponses());
-        }));
-    }
-
-    /**
-     * Adds the default global API responses.
-     */
-    private void addDefaultGlobalResponses(ApiResponses apiResponses) {
-        apiResponses.replace(String.valueOf(HttpStatus.CREATED.value()), getDefaultGlobalResponse(HttpStatus.CREATED));
-        apiResponses.replace(String.valueOf(HttpStatus.BAD_REQUEST.value()), getDefaultGlobalResponse(HttpStatus.BAD_REQUEST));
-        apiResponses.replace(String.valueOf(HttpStatus.UNAUTHORIZED.value()), getDefaultGlobalResponse(HttpStatus.UNAUTHORIZED));
-        apiResponses.replace(String.valueOf(HttpStatus.FORBIDDEN.value()), getDefaultGlobalResponse(HttpStatus.FORBIDDEN));
-        apiResponses.replace(String.valueOf(HttpStatus.NOT_FOUND.value()), getDefaultGlobalResponse(HttpStatus.NOT_FOUND));
-        apiResponses.replace(String.valueOf(HttpStatus.CONFLICT.value()), getDefaultGlobalResponse(HttpStatus.CONFLICT));
-        apiResponses.replace(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), getDefaultGlobalResponse(HttpStatus.INTERNAL_SERVER_ERROR));
-    }
-
-    /**
-     * Returns a default global response for the given {@link HttpStatus}.
-     * <p>If the given status is a 4xx client error or a 5xx server error, it will bind the {@link ApiError} to the schema of the response.</p>
-     *
-     * @param httpStatus the status of the global response.
-     * @return the default global response.
-     */
-    private ApiResponse getDefaultGlobalResponse(HttpStatus httpStatus) {
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.description(httpStatus.getReasonPhrase());
-
-        if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
-            apiResponse.content(API_ERROR_CONTENT);
-        }
-
-        return apiResponse;
+    private Map<String, Schema> schemas() {
+        return ModelConverters.getInstance().read(ApiError.class);
     }
 }

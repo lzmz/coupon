@@ -29,19 +29,7 @@ public class ItemConsumerServiceImpl implements ItemConsumerService {
     @Override
     public Map<String, Float> getItemsPrice(List<String> ids) {
         Map<String, Float> items = new HashMap<>();
-
-        for (String id : ids) {
-            Optional<Item> itemCache = itemRepository.findById(id);
-
-            if (itemCache.isPresent()) {
-                items.put(id, itemCache.get().getPrice());
-            } else {
-                float price = getItemPrice(id);
-                items.put(id, price);
-                itemRepository.save(new Item(id, price));
-            }
-        }
-
+        ids.forEach(id -> items.put(id, getItemPrice(id)));
         return items;
     }
 
@@ -49,13 +37,22 @@ public class ItemConsumerServiceImpl implements ItemConsumerService {
      * {@inheritDoc}
      */
     @Override
-    public float getItemPrice(String id) {
-        return this.webClient
+    public Float getItemPrice(String id) {
+        Optional<Item> itemCache = itemRepository.findById(id);
+
+        if (itemCache.isPresent()) {
+            return itemCache.get().getPrice();
+        }
+
+        Float price = this.webClient
                 .get()
                 .uri(builder -> builder.path(id).build())
                 .retrieve()
                 .bodyToMono(ItemPriceDto.class)
                 .block()
                 .getPrice();
+
+        itemRepository.save(new Item(id, price));
+        return price;
     }
 }

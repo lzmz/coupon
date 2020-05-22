@@ -19,5 +19,5 @@ public interface ItemConsumerService {
      * @param id the ID of the item from which the price will be recovered.
      * @return the price of the item.
      */
-    float getItemPrice(String id);
+    Float getItemPrice(String id);
 }
