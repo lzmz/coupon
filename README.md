@@ -27,10 +27,17 @@ $ mvn spring-boot:run
 
 ---
 
-## Running tests 🔩
+## Tests 🔩
+Run:
 ```
 $ mvn test
 ```
+JaCoCo code coverage report:
+```
+$ mvn jacoco:report
+```
+> You can take a look at target/site/jacoco/index.html page to see what the generated report looks like.
+
 ---
 
 ## Built with 🛠

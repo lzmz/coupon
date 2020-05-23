@@ -86,21 +86,6 @@ public class CouponServiceTest {
     }
 
     @Test
-    public void calculate_validEntrySetDuplicateItem_shouldReturnSolutionWithOneItem() throws InsufficientAmountException {
-        Map<String, Float> items = new HashMap<>();
-        items.put("MLA1", 100F);
-        items.put("MLA1", 100F);
-        Float solutionAmount = 100F;
-        List<String> solutionIds = Collections.singletonList("MLA1");
-
-        List<String> calculated = couponService.calculate(items, 500F);
-        Float total = couponService.calculateTotalAmount(calculated, items);
-
-        assertEquals(solutionAmount, total);
-        assertIterableEquals(solutionIds, calculated);
-    }
-
-    @Test
     public void calculate_validEntrySet1_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 100F);

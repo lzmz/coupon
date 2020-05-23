@@ -86,13 +86,13 @@ public class CouponServiceImpl implements CouponService {
     }
 
     /**
-     * Retrieves the elements that are part of the best solution found.
+     * Retrieves the elements that are part of the best solution found, sorted by the IDs.
      *
      * @param itemsId     an array of items ID.
      * @param itemsPrice  an array of items price.
      * @param couponValue the value of the coupon.
      * @param bestSoFar   the matrix containing the solutions.
-     * @return a list of the items that make up the solution found and the maximized total expense.
+     * @return a list of the items that make up the best solution found.
      */
     public List<String> getItemsForBestSolution(String[] itemsId, int[] itemsPrice, int couponValue, int[][] bestSoFar) {
         int value = couponValue;
