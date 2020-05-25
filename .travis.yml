@@ -9,3 +9,12 @@ script:
   - mvn test jacoco:report
 after_success:
   - mvn jacoco:prepare-agent coveralls:report
+deploy:
+  provider: cloudfoundry
+  username: leonelemenendez@gmail.com
+  password:
+    secure: SYphNH0aNz6PSb8O+IiraL7IqX/xiYYmdpfUB73bcch6uzf1TZpybCNi3F1PfNIL1iUmtFZ+YslvNXKTWqSXeXShzZ+gpyBWh+hNDpgjTWHrT9wFFLX93hHvHwwyUsNqk5k0Eb2DbIH0/wvtsEvPtFBtyicvYnYJqr62+HnReRJbljsTGlAyHTX0Y0Bg0VPgLsxXRGUS7ceUki7+Xhp8vBROjhIjVH5pF8Y9qyAgDNqGaduKpuHhE8vTYjW64buPAPaCysS5FdU0e3mpgGnmTxtH0dk1g2odnEY1fKw5aSKEbtKQkRgHrM4QyNNTb3+JW03KhWXwLMrSfjRzLU6vtJgMIIE7PW+uQpdaj8n5mFLTUz95+92yQr13VmiC2+9l/TsocmP9ExNqxcMpyGxS0Q3Ha14fb8b570DwBgXGwZjqfCINP4EWr4GGXPaKjMzMj/OZhI5VIoXJG5MkTRqgvBpIX8GFOiXIVFeVkj0IhgsqUe/b7so62Ko7nIdoS52zkFGo2Cuav5AWTpQm7/eu5vGGQ8qrKkkYVxsWuZo76u+cCzdrI1hoChyRQWCZrB9BXA9X/bMwBP2eELsIujAOXuaUvwRZRYbxf7APLBSwZq9Ajh54BYYz3cbS/sskjs6kGGozpZOwxIBFvKj9KGod0Fln8KPo0C6UN7JPDInvJ/8=
+  organization: lzmz
+  space: development
+  app_name: api.coupon
+  edge: true
