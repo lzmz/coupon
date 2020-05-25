@@ -22,6 +22,7 @@
         <okhttp.version>4.7.2</okhttp.version>
         <mockwebserver.version>4.7.2</mockwebserver.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
+        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     </properties>
 
@@ -148,6 +149,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>

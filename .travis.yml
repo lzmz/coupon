@@ -5,3 +5,7 @@ services:
   - redis-server
 before_install:
   - chmod +x mvnw
+script:
+  - mvn test jacoco:report
+after_success:
+  - mvn jacoco:prepare-agent coveralls:report
