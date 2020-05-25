@@ -1,20 +1,15 @@
 package io.github.lzmz.coupon.config;
 
-import io.github.lzmz.coupon.exceptions.ApiError;
-import io.swagger.v3.core.converter.ModelConverters;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.media.Schema;
 import org.springdoc.core.SpringDocConfigProperties;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Collections;
-import java.util.Map;
 
 @Configuration
 public class SwaggerConfig {
@@ -44,9 +39,7 @@ public class SwaggerConfig {
      */
     @Bean
     public OpenAPI api() {
-        return new OpenAPI()
-                .components(components())
-                .info(info());
+        return new OpenAPI().info(info());
     }
 
     /**
@@ -80,25 +73,5 @@ public class SwaggerConfig {
      */
     private License license() {
         return new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0.html");
-    }
-
-    /**
-     * Defines the components for the exposed API.
-     *
-     * @return the components.
-     */
-    private Components components() {
-        Components components = new Components();
-        components.setSchemas(schemas());
-        return components;
-    }
-
-    /**
-     * Defines the schemas for the exposed API.
-     *
-     * @return the schemas.
-     */
-    private Map<String, Schema> schemas() {
-        return ModelConverters.getInstance().read(ApiError.class);
     }
 }

@@ -1,4 +1,4 @@
-package io.github.lzmz.coupon.exceptions;
+package io.github.lzmz.coupon.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

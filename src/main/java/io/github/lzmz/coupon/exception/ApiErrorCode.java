@@ -1,4 +1,4 @@
-package io.github.lzmz.coupon.exceptions;
+package io.github.lzmz.coupon.exception;
 
 public final class ApiErrorCode {
     public static final int INTERNAL_SERVER_ERROR = 0;

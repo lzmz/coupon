@@ -1,6 +1,6 @@
 package io.github.lzmz.coupon.service;
 
-import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
+import io.github.lzmz.coupon.exception.InsufficientAmountException;
 
 import java.util.List;
 import java.util.Map;

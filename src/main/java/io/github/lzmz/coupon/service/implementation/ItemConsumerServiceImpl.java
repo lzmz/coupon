@@ -1,7 +1,7 @@
 package io.github.lzmz.coupon.service.implementation;
 
 import io.github.lzmz.coupon.dto.response.ItemPriceDto;
-import io.github.lzmz.coupon.exceptions.NoItemPriceException;
+import io.github.lzmz.coupon.exception.NoItemPriceException;
 import io.github.lzmz.coupon.redis.Item;
 import io.github.lzmz.coupon.redis.ItemRepository;
 import io.github.lzmz.coupon.service.ItemConsumerService;

@@ -3,8 +3,8 @@ package io.github.lzmz.coupon.controller;
 import io.github.lzmz.coupon.dto.request.CouponCalculateDto;
 import io.github.lzmz.coupon.dto.response.CouponSolutionDto;
 import io.github.lzmz.coupon.endpoint.CouponEndpoint;
-import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
-import io.github.lzmz.coupon.exceptions.NoItemPriceException;
+import io.github.lzmz.coupon.exception.InsufficientAmountException;
+import io.github.lzmz.coupon.exception.NoItemPriceException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,7 +52,7 @@ public class CouponController {
     public ResponseEntity<CouponSolutionDto> calculate(@Valid @RequestBody CouponCalculateDto couponCalculateDto) throws InsufficientAmountException, NoItemPriceException {
         Map<String, Float> items = itemConsumerService.getItemsPrice(couponCalculateDto.getItemsId());
         List<String> calculated = couponService.calculate(items, couponCalculateDto.getAmount());
-        float total = couponService.calculateTotalAmount(calculated, items);
+        Float total = couponService.calculateTotalAmount(calculated, items);
         return new ResponseEntity<>(new CouponSolutionDto(calculated, total), HttpStatus.OK);
     }
 }

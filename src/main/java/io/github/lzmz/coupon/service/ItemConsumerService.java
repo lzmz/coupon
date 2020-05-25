@@ -1,6 +1,6 @@
 package io.github.lzmz.coupon.service;
 
-import io.github.lzmz.coupon.exceptions.NoItemPriceException;
+import io.github.lzmz.coupon.exception.NoItemPriceException;
 
 import java.util.List;
 import java.util.Map;

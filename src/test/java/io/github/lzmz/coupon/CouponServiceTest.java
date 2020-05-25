@@ -1,7 +1,7 @@
 package io.github.lzmz.coupon;
 
 
-import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
+import io.github.lzmz.coupon.exception.InsufficientAmountException;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.implementation.CouponServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -157,7 +157,7 @@ public class CouponServiceTest {
         Float solutionAmount = 21.3F;
         List<String> solutionIds = Arrays.asList("MLA1", "MLA2");
 
-        List<String> calculated = couponService.calculate(items, 21.30F);
+        List<String> calculated = couponService.calculate(items, 21.3F);
         Float total = couponService.calculateTotalAmount(calculated, items);
 
         assertEquals(solutionAmount, total);

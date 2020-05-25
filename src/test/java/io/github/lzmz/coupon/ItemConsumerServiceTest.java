@@ -1,7 +1,7 @@
 package io.github.lzmz.coupon;
 
 
-import io.github.lzmz.coupon.exceptions.NoItemPriceException;
+import io.github.lzmz.coupon.exception.NoItemPriceException;
 import io.github.lzmz.coupon.redis.Item;
 import io.github.lzmz.coupon.redis.ItemRepository;
 import io.github.lzmz.coupon.service.ItemConsumerService;
@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -91,7 +92,7 @@ public class ItemConsumerServiceTest {
     @Test
     public void getItemsPrice_validIdsNoPrice_shouldThrowNoItemPriceException() {
         List<String> ids = Arrays.asList("MLA1", "MLA2");
-        List<Float> prices = Arrays.asList(100F);
+        List<Float> prices = Collections.singletonList(100F);
 
         mockWebServer
                 .enqueue(new MockResponse()

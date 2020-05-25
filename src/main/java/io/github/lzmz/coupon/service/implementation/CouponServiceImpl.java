@@ -1,6 +1,6 @@
 package io.github.lzmz.coupon.service.implementation;
 
-import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
+import io.github.lzmz.coupon.exception.InsufficientAmountException;
 import io.github.lzmz.coupon.service.CouponService;
 import org.springframework.stereotype.Service;
 
@@ -38,28 +38,30 @@ public class CouponServiceImpl implements CouponService {
             throw new InsufficientAmountException(amount);
         }
 
-        String[] itemsId = intItems.keySet().toArray(new String[0]);
-        int[] itemsPrice = intItems.values().stream().mapToInt(Integer::intValue).toArray();
+        String[] ids = intItems.keySet().toArray(new String[0]);
+        int[] prices = intItems.values().stream().mapToInt(Integer::intValue).toArray();
 
-        if (itemsPrice.length == 1 && itemsPrice[0] <= amount * DECIMALS) {
-            return new ArrayList<>(Collections.singletonList(itemsId[0]));
+        if (prices.length == 1 && prices[0] <= amount * DECIMALS) {
+            return new ArrayList<>(Collections.singletonList(ids[0]));
         }
 
-        int itemsAmount = itemsPrice.length;
+        int itemsNumber = ids.length;
         int couponValue = (int) (amount * DECIMALS);
-        int[][] bestSoFar = new int[itemsAmount + 1][couponValue + 1];
+        int[][] solutions = new int[itemsNumber + 1][couponValue + 1];
 
-        for (int price = 1; price <= itemsAmount; price++) {
+        for (int itemCount = 1; itemCount <= itemsNumber; itemCount++) {
             for (int value = 1; value <= couponValue; value++) {
-                if (itemsPrice[price - 1] <= value) {
-                    bestSoFar[price][value] = Math.max(itemsPrice[price - 1] + bestSoFar[price - 1][value - itemsPrice[price - 1]], bestSoFar[price - 1][value]);
+                if (prices[itemCount - 1] > value) {
+                    solutions[itemCount][value] = solutions[itemCount - 1][value];
                 } else {
-                    bestSoFar[price][value] = bestSoFar[price - 1][value];
+                    int notConsidered = solutions[itemCount - 1][value];
+                    int considered = prices[itemCount - 1] + solutions[itemCount - 1][value - prices[itemCount - 1]];
+                    solutions[itemCount][value] = Math.max(notConsidered, considered);
                 }
             }
         }
 
-        return getItemsForBestSolution(itemsId, itemsPrice, couponValue, bestSoFar);
+        return getItemsForBestSolution(ids, prices, couponValue, solutions);
     }
 
     /**
@@ -91,19 +93,19 @@ public class CouponServiceImpl implements CouponService {
      * @param itemsId     an array of items ID.
      * @param itemsPrice  an array of items price.
      * @param couponValue the value of the coupon.
-     * @param bestSoFar   the matrix containing the solutions.
+     * @param solutions   the matrix containing the solutions.
      * @return a list of the items that make up the best solution found.
      */
-    public List<String> getItemsForBestSolution(String[] itemsId, int[] itemsPrice, int couponValue, int[][] bestSoFar) {
+    public List<String> getItemsForBestSolution(String[] itemsId, int[] itemsPrice, int couponValue, int[][] solutions) {
         int value = couponValue;
-        int best = bestSoFar[itemsPrice.length][couponValue];
+        int best = solutions[itemsPrice.length][couponValue];
         List<String> items = new ArrayList<>();
 
-        for (int i = itemsPrice.length; i > 0 && best > 0; i--) {
-            if (best != bestSoFar[i - 1][value]) {
-                items.add(itemsId[i - 1]);
-                best -= itemsPrice[i - 1];
-                value -= itemsPrice[i - 1];
+        for (int itemCount = itemsPrice.length; itemCount > 0 && best > 0; itemCount--) {
+            if (best != solutions[itemCount - 1][value]) {
+                items.add(itemsId[itemCount - 1]);
+                best -= itemsPrice[itemCount - 1];
+                value -= itemsPrice[itemCount - 1];
             }
         }
 

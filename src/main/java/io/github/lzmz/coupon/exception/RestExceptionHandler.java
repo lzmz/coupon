@@ -1,4 +1,4 @@
-package io.github.lzmz.coupon.exceptions;
+package io.github.lzmz.coupon.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,13 +14,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -28,11 +27,11 @@ import java.util.stream.Collectors;
  * Class to handle errors appropriately to be sent as responses.
  */
 @ControllerAdvice
-public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestExceptionHandler {
 
     private final ObjectMapper objectMapper;
 
-    public CustomRestExceptionHandler(ObjectMapper objectMapper) {
+    public RestExceptionHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -45,8 +44,8 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      * @param errors  a list of detailed errors.
      * @return a new {@link ApiError}.
      */
-    public ResponseEntity<Object> getErrorResponse(int code, HttpStatus status, String message, List<String> errors) {
-        ApiError apiError = new ApiError(code, status, message, errors);
+    public ResponseEntity<ApiError> getErrorResponse(int code, HttpStatus status, String message, List<String> errors) {
+        ApiError apiError = new ApiError(code, status, message.trim(), errors);
         return new ResponseEntity<>(apiError, new HttpHeaders(), status);
     }
 
@@ -59,23 +58,19 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      * @param error   the detailed errors.
      * @return a new {@link ApiError}.
      */
-    public ResponseEntity<Object> getErrorResponse(int code, HttpStatus status, String message, String error) {
-        ApiError apiError = new ApiError(code, status, message, error.trim());
+    public ResponseEntity<ApiError> getErrorResponse(int code, HttpStatus status, String message, String error) {
+        ApiError apiError = new ApiError(code, status, message.trim(), error.trim());
         return new ResponseEntity<>(apiError, new HttpHeaders(), status);
     }
 
     /**
      * Triggered when the requested resource couldn't be found.
      *
-     * @param ex      the {@link NoHandlerFoundException} to handle.
-     * @param headers {@link HttpHeaders}.
-     * @param status  {@link HttpStatus}.
-     * @param request {@link WebRequest}.
      * @return a {@link ResponseEntity} object with the error handled.
      */
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @Override
-    public ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ApiError> handleNoHandlerFoundException() {
         int code = ApiErrorCode.NOT_FOUND;
         HttpStatus httpStatus = HttpStatus.NOT_FOUND;
         String message = "404 error";
@@ -86,67 +81,48 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Triggered when an unsupported media type for a given end point was received.
      *
-     * @param ex      the {@link HttpMediaTypeNotSupportedException} to handle.
-     * @param headers {@link HttpHeaders}.
-     * @param status  {@link HttpStatus}.
-     * @param request {@link WebRequest}.
+     * @param ex the {@link HttpMediaTypeNotSupportedException} to handle.
      * @return a {@link ResponseEntity} object with the error handled.
      */
     @ResponseStatus(value = HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-    @Override
-    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
         int code = ApiErrorCode.UNSUPPORTED_MEDIA_TYPE;
         HttpStatus httpStatus = HttpStatus.UNSUPPORTED_MEDIA_TYPE;
         String message = "Unsupported media type";
         StringBuilder error = new StringBuilder();
-        error.append(ex.getContentType()).append(" media type is not supported");
-
-        if (!ex.getSupportedMediaTypes().isEmpty()) {
-            error.append(". Supported media types are ");
-            ex.getSupportedMediaTypes().forEach(mediaType -> error.append(mediaType).append(", "));
-        }
-
+        error.append(ex.getContentType()).append(" media type is not supported. Supported media types are ");
+        ex.getSupportedMediaTypes().forEach(mediaType -> error.append(mediaType).append(", "));
         return getErrorResponse(code, httpStatus, message, error.toString());
     }
 
     /**
      * Triggered when an unsupported HTTP method for a given end point was received.
      *
-     * @param ex      the {@link HttpRequestMethodNotSupportedException} to handle.
-     * @param headers {@link HttpHeaders}.
-     * @param status  {@link HttpStatus}.
-     * @param request {@link WebRequest}.
+     * @param ex the {@link HttpRequestMethodNotSupportedException} to handle.
      * @return a {@link ResponseEntity} object with the error handled.
      */
     @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED)
-    @Override
-    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         int code = ApiErrorCode.METHOD_NOT_ALLOWED;
         HttpStatus httpStatus = HttpStatus.METHOD_NOT_ALLOWED;
         String message = "Unsupported HTTP method";
         StringBuilder error = new StringBuilder();
-        error.append(ex.getMethod()).append(" method is not supported for this request");
-
-        if (ex.getSupportedHttpMethods() != null && !ex.getSupportedHttpMethods().isEmpty()) {
-            error.append(". Supported methods are ");
-            ex.getSupportedHttpMethods().forEach(method -> error.append(method).append(" "));
-        }
-
+        error.append(ex.getMethod()).append(" method is not supported for this request. Supported methods are ");
+        Objects.requireNonNull(ex.getSupportedHttpMethods()).forEach(method -> error.append(method).append(" "));
         return getErrorResponse(code, httpStatus, message, error.toString());
     }
 
     /**
      * Triggered when an argument annotated with {@code @Valid} failed on being validated.
      *
-     * @param ex      the {@link MethodArgumentNotValidException} to handle.
-     * @param headers {@link HttpHeaders}.
-     * @param status  {@link HttpStatus}.
-     * @param request {@link WebRequest}.
+     * @param ex the {@link MethodArgumentNotValidException} to handle.
      * @return a {@link ResponseEntity} object with the error handled.
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         int code = ApiErrorCode.METHOD_ARGUMENT_NOT_VALID;
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
         StringBuilder message = new StringBuilder("Invalid arguments: ");
@@ -157,21 +133,18 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
             message.append(error.getField()).append(" ");
         }
 
-        return getErrorResponse(code, httpStatus, message.toString().trim(), errors);
+        return getErrorResponse(code, httpStatus, message.toString(), errors);
     }
 
     /**
      * Triggered when a fatal problem occurred with content mapping.
      *
-     * @param ex      the {@link HttpMessageNotReadableException} to handle.
-     * @param headers {@link HttpHeaders}.
-     * @param status  {@link HttpStatus}.
-     * @param request {@link WebRequest}.
+     * @param ex the {@link HttpMessageNotReadableException} to handle.
      * @return a {@link ResponseEntity} object with the error handled.
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         int code = ApiErrorCode.MESSAGE_NOT_READABLE;
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
         String message = "Invalid body";
@@ -187,15 +160,13 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ResponseStatus(value = HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(WebClientResponseException.class)
-    public ResponseEntity<Object> handleWebClientResponseException(WebClientResponseException ex) throws JsonProcessingException {
+    public ResponseEntity<ApiError> handleWebClientResponseException(WebClientResponseException ex) throws JsonProcessingException {
         int code = ApiErrorCode.WEB_CLIENT_RESPONSE;
         HttpStatus httpStatus = HttpStatus.BAD_GATEWAY;
         String message = "Error occurred on external call";
-
         String body = ex.getResponseBodyAsString();
-        ConsumerServiceErrorDto consumerServiceErrorDto = objectMapper.readValue(body, ConsumerServiceErrorDto.class);
-
-        return getErrorResponse(code, httpStatus, message, consumerServiceErrorDto.getMessage());
+        String error = objectMapper.readValue(body, ConsumerServiceErrorDto.class).getMessage();
+        return getErrorResponse(code, httpStatus, message, error);
     }
 
     /**
@@ -206,7 +177,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler({NoItemPriceException.class})
-    public ResponseEntity<Object> handleNoItemPrice(NoItemPriceException ex) {
+    public ResponseEntity<ApiError> handleNoItemPrice(NoItemPriceException ex) {
         int code = ApiErrorCode.NO_ITEM_PRICE;
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
         String message = "No item price";
@@ -222,7 +193,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler({InsufficientAmountException.class})
-    public ResponseEntity<Object> handleInsufficientAmount(InsufficientAmountException ex) {
+    public ResponseEntity<ApiError> handleInsufficientAmount(InsufficientAmountException ex) {
         int code = ApiErrorCode.INSUFFICIENT_AMOUNT;
         HttpStatus httpStatus = HttpStatus.NOT_FOUND;
         String message = "Insufficient amount";
@@ -237,7 +208,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({Exception.class})
-    public ResponseEntity<Object> handleAll() {
+    public ResponseEntity<ApiError> handleAll() {
         int code = ApiErrorCode.INTERNAL_SERVER_ERROR;
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         String message = "It's not you. It's us. We are having some problems";

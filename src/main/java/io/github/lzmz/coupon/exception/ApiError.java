@@ -1,4 +1,4 @@
-package io.github.lzmz.coupon.exceptions;
+package io.github.lzmz.coupon.exception;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

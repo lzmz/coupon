@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.lzmz.coupon.controller.CouponController;
 import io.github.lzmz.coupon.dto.request.CouponCalculateDto;
 import io.github.lzmz.coupon.endpoint.CouponEndpoint;
-import io.github.lzmz.coupon.exceptions.ApiErrorCode;
-import io.github.lzmz.coupon.exceptions.CustomRestExceptionHandler;
-import io.github.lzmz.coupon.exceptions.InsufficientAmountException;
-import io.github.lzmz.coupon.exceptions.NoItemPriceException;
+import io.github.lzmz.coupon.exception.ApiErrorCode;
+import io.github.lzmz.coupon.exception.InsufficientAmountException;
+import io.github.lzmz.coupon.exception.NoItemPriceException;
+import io.github.lzmz.coupon.exception.RestExceptionHandler;
 import io.github.lzmz.coupon.service.CouponService;
 import io.github.lzmz.coupon.service.ItemConsumerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ public class CouponControllerTest {
         CouponController couponController = new CouponController(itemConsumerService, couponService);
         this.mockMvc = MockMvcBuilders
                 .standaloneSetup(couponController)
-                .setControllerAdvice(new CustomRestExceptionHandler(objectMapper))
+                .setControllerAdvice(new RestExceptionHandler(objectMapper))
                 .build();
     }
 
