@@ -48,6 +48,8 @@ $ mvn jacoco:report
 * [OpenAPI 3.0 (Springdoc)](https://springdoc.org/) - API documentation.
 * [Redis](https://redis.io/) - In-memory data structure store.
 * [Maven](https://maven.apache.org/) - Dependency manager.
+* [Travis CI](https://travis-ci.org/) - CI/CD Tool.
+* [Coveralls](https://coveralls.io/) - Coverage code history web service.
 
 ---
 
