@@ -29,6 +29,11 @@ public class CouponIntegrationTest {
     private TestRestTemplate testRestTemplate;
 
     @Test
+    public void applicationStarts() {
+        CouponApplication.main(new String[]{});
+    }
+
+    @Test
     public void handleNoHandlerFoundException_invalidHandler_shouldReturnNotFound() {
         ResponseEntity<ApiError> response = testRestTemplate.getForEntity("/invalid-endpoint", ApiError.class);
         assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);

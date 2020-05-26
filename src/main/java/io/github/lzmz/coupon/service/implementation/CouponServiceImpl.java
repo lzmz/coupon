@@ -38,12 +38,12 @@ public class CouponServiceImpl implements CouponService {
             throw new InsufficientAmountException(amount);
         }
 
+        if (intItems.size() == 1) {
+            return new ArrayList<>(Collections.singletonList(items.keySet().iterator().next()));
+        }
+
         String[] ids = intItems.keySet().toArray(new String[0]);
         int[] prices = intItems.values().stream().mapToInt(Integer::intValue).toArray();
-
-        if (prices.length == 1 && prices[0] <= amount * DECIMALS) {
-            return new ArrayList<>(Collections.singletonList(ids[0]));
-        }
 
         int itemsNumber = ids.length;
         int couponValue = (int) (amount * DECIMALS);

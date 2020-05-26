@@ -102,6 +102,23 @@ public class CouponServiceTest {
     @Test
     public void calculate_validEntrySet2_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
+        items.put("MLA1", 2F);
+        items.put("MLA2", 2F);
+        items.put("MLA3", 4F);
+        items.put("MLA4", 6F);
+        Float solutionAmount = 10F;
+        List<String> solutionIds = Arrays.asList("MLA3", "MLA4");
+
+        List<String> calculated = couponService.calculate(items, 10F);
+        Float total = couponService.calculateTotalAmount(calculated, items);
+
+        assertEquals(solutionAmount, total);
+        assertIterableEquals(solutionIds, calculated);
+    }
+
+    @Test
+    public void calculate_validEntrySet3_shouldReturnSolution() throws InsufficientAmountException {
+        Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 100F);
         items.put("MLA2", 210F);
         items.put("MLA3", 260F);
@@ -118,7 +135,7 @@ public class CouponServiceTest {
     }
 
     @Test
-    public void calculate_validEntrySet3_shouldReturnSolution() throws InsufficientAmountException {
+    public void calculate_validEntrySet4_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 270F);
         items.put("MLA2", 100F);
@@ -135,7 +152,7 @@ public class CouponServiceTest {
     }
 
     @Test
-    public void calculate_validEntrySet4_shouldReturnSolution() throws InsufficientAmountException {
+    public void calculate_validEntrySet5_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 10.65F);
         items.put("MLA2", 10.65F);
@@ -150,7 +167,7 @@ public class CouponServiceTest {
     }
 
     @Test
-    public void calculate_validEntrySet5_shouldReturnSolution() throws InsufficientAmountException {
+    public void calculate_validEntrySet6_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 10.65F);
         items.put("MLA2", 10.65F);

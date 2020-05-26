@@ -90,6 +90,20 @@ public class ItemConsumerServiceTest {
     }
 
     @Test
+    public void getItemsPrice_validIdNoItem_shouldThrowNoItemPriceException() {
+        List<String> ids = Collections.singletonList("MLA1");
+
+        mockWebServer
+                .enqueue(new MockResponse()
+                        .setResponseCode(HttpStatus.OK.value())
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                );
+
+        assertThrows(NoItemPriceException.class, () -> itemConsumerService.getItemsPrice(ids));
+        assertEquals(mockWebServer.getRequestCount(), ids.size());
+    }
+
+    @Test
     public void getItemsPrice_validIdsNoPrice_shouldThrowNoItemPriceException() {
         List<String> ids = Arrays.asList("MLA1", "MLA2");
         List<Float> prices = Collections.singletonList(100F);

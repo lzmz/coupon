@@ -126,4 +126,22 @@ public class CouponControllerTest {
         result.andExpect(status().isNotFound());
         result.andExpect((jsonPath("$.code").value(ApiErrorCode.INSUFFICIENT_AMOUNT)));
     }
+
+    @Test
+    public void calculate_validBodyInternalError_shouldReturnInternalServerError() throws Exception {
+        List<String> ids = new ArrayList<>(Arrays.asList("MLA1", "MLA2"));
+
+        when(itemConsumerService.getItemsPrice(ids)).thenThrow(RuntimeException.class);
+
+        CouponCalculateDto couponCalculateDto = new CouponCalculateDto(ids, 500F);
+
+        ResultActions result = mockMvc.perform(
+                post(CouponEndpoint.BASE)
+                        .content(objectMapper.writeValueAsString(couponCalculateDto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_VALUE));
+
+        result.andExpect(status().isInternalServerError());
+        result.andExpect((jsonPath("$.code").value(ApiErrorCode.INTERNAL_SERVER_ERROR)));
+    }
 }
