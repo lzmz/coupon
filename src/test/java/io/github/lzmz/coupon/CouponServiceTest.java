@@ -89,10 +89,11 @@ public class CouponServiceTest {
     public void calculate_validEntrySet1_shouldReturnSolution() throws InsufficientAmountException {
         Map<String, Float> items = new HashMap<>();
         items.put("MLA1", 100F);
+        items.put("MLA2", 200F);
         Float solutionAmount = 100F;
         List<String> solutionIds = Collections.singletonList("MLA1");
 
-        List<String> calculated = couponService.calculate(items, 500F);
+        List<String> calculated = couponService.calculate(items, 100F);
         Float total = couponService.calculateTotalAmount(calculated, items);
 
         assertEquals(solutionAmount, total);

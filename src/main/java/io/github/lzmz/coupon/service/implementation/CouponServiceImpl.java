@@ -5,7 +5,6 @@ import io.github.lzmz.coupon.service.CouponService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,7 +16,7 @@ public class CouponServiceImpl implements CouponService {
      * The value by which prices will be multiplied to consider pennies
      * (e.g. if the value is 100, two pennies will be considered).
      */
-    final static float DECIMALS = 100F;
+    private final static float DECIMALS = 100F;
 
     /**
      * {@inheritDoc}
@@ -39,7 +38,7 @@ public class CouponServiceImpl implements CouponService {
         }
 
         if (intItems.size() == 1) {
-            return new ArrayList<>(Collections.singletonList(items.keySet().iterator().next()));
+            return new ArrayList<>(intItems.keySet());
         }
 
         String[] ids = intItems.keySet().toArray(new String[0]);
